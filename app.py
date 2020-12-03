@@ -1,3 +1,4 @@
+from RandomWordGenerator import RandomWord
 from flask import Flask, render_template, request
 import nltk
 from nltk.stem import WordNetLemmatizer
@@ -90,32 +91,60 @@ def is_tag_in_intents(tag_test):
     return False
 
 
+def correct_previous(new_input, new_response):
+    trainer = Trainer()
+    rw = RandomWord(max_word_size=5)
+    trainer.add_new_intent(rw.generate(), [new_input], new_response)
+
+
 app = Flask(__name__)
 
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    return render_template("index.html")
 
+correct = False
+previous_input = ""
+answer_tab = []
 
 @app.route("/get")
 def get_bot_response():
+    global correct
+    global previous_input
+    global answer_tab
     inp = request.args.get('msg')
+
+    if inp.lower() == "correct":
+        correct = True
+        return "Correct Activated, enter the expected answer for: " + previous_input
+
+    if inp.lower() == "done" and len(answer_tab) > 0:
+        correct_previous(previous_input, answer_tab)
+        answer_tab = []
+        correct = False
+        return "Your input has been added. Restart me to update my brain !"
+
+    if correct:
+        answer_tab.append(inp)
+        return "Enter the next one, or press 'done' to finish."
 
     master_module = is_master_module(inp.lower())
     if master_module is None:
         resp = chatbot_response(inp.lower())
         if float(resp["prob"]) > 0.7:
             if resp["context"] == "none":
+                previous_input = inp
                 return resp["text"]
             else:
                 resp = launch_module(inp.lower(), resp["context"])
                 return resp
         else:
+            previous_input = inp
             return "I am very sorry, but i didn't understand."
     else:
         return master_module
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')
