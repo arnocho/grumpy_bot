@@ -1,7 +1,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/arnocho/grumpy_bot">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://image.flaticon.com/icons/svg/3814/3814773.svg" alt="Logo" width="100" height="100">
   </a>
 
   <h3 align="center">Grumpy Bot - Documentation</h3>
